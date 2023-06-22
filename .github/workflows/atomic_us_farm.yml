@@ -1,0 +1,122 @@
+name: atomic_us_farm
+on:
+  workflow_dispatch:
+    inputs:
+      accounts_ondemand:
+        description: 'Enter the accounts, separated by commas'
+  schedule:
+    - cron: '11 9 * * *'
+    #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
+
+jobs:
+  # define matrix for all executions
+  # ------------------------
+  DefineMatrix:
+    runs-on: ubuntu-latest
+    outputs:
+      accounts: ${{ steps.get-accounts.outputs.IDs }}
+    steps:
+    - name: Notify to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_USERID }}
+        token: ${{ secrets.TELEGRAM_API_TOKEN }}
+        message: |
+          Job atomic_us_farm for account estrattorioboista starting!
+    - name: Get Accounts
+      id: get-accounts
+      env:
+        accounts_ondemand: ${{ inputs.accounts_ondemand }}
+      run: |
+        if [ -z "$accounts_ondemand" ]; then
+          echo "The accounts input is empty."
+          echo $(echo ${{ secrets.MATRIX_US }} | base64 --decode) > originalData.json
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          jq '[.[] | { the_id: .id }]' originalData.json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          rm -f originalData.json
+        else
+          array=($(echo "$accounts_ondemand" | tr ',' '\n'))
+          echo "array=$(echo ${array[@]})" >> $GITHUB_OUTPUT
+          json="["
+          for i in ${!array[@]}; do
+            json=$json"{\"the_id\":\""${array[i]}"\"},"
+          done
+          json=${json%,}
+          json=$json"]"
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          echo $json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+        fi
+  # ------------------------
+  # deploy a container for the job
+  wasabi:
+    name: Run container
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - DefineMatrix
+    strategy:
+      matrix:
+        account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        echo "$(date) | INFO  | Install dependencies ..."   
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Set Secrets
+      id: sets-secrets
+      run: |
+        echo ${{ matrix.account.the_id }}
+        echo $(echo ${{ secrets.MATRIX_US }} | base64 --decode) > originalData.json
+        the_user=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .user' originalData.json)
+        the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
+        echo "::add-mask::$the_user"
+        echo "::add-mask::$the_pass"
+
+        echo '[{ "username": '$the_user', "password": '$the_pass' }]' > accounts.json
+        cat accounts.json
+
+        rm -f originalData.json
+        unset the_user
+        unset the_pass
+
+    - name: Run script
+      timeout-minutes: 30
+      run: |
+        echo "$(date) | INFO  | Configuring wasabi..."
+        echo "$(date) | INFO  | Starting wasabi"      
+        python ms_rewards_farmer.py \
+            --headless \
+            --fast \
+            --dont-check-for-updates \
+            --dont-check-internet \
+            --error \
+            --no-webdriver-manager \
+            --on-finish 'exit' \
+            --no-images \
+            --repeat-shopping \
+            --session \
+            --discord ${{ secrets.DISCORD_URL }}
+            #--telegram ${{ secrets.TELEGRAM_API_TOKEN }} ${{ secrets.TELEGRAM_USERID }}
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - wasabi
+    steps:
+    - name: Notify to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_USERID }}
+        token: ${{ secrets.TELEGRAM_API_TOKEN }}
+        message: |
+          Job atomic_us_farm for account estrattorioboista was executed!
