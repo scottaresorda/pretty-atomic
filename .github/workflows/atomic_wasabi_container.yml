@@ -184,8 +184,8 @@ jobs:
           -e TELEGRAM_USERID=${{ secrets.TELEGRAM_USERID }} \
           -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
           -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
-          -e HTTP_PROXY=http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
-          -e HTTPS_PROXY=http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
+          -e HTTP_PROXY="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e HTTPS_PROXY="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
         ${{ secrets.CONTAINER_IMAGE }}
 
   notify:
