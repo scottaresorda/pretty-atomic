@@ -1,4 +1,4 @@
-name: atomic_wasabi_comtainer
+name: atomic_wasabi_container
 on:
   workflow_dispatch:
     inputs:
