@@ -147,7 +147,6 @@ jobs:
         echo "$(date) | INFO  | Configuring wasabi..."
         echo "$(date) | INFO  | Starting wasabi"      
         python ms_rewards_farmer.py \
-            --virtual-display \
             --browser uc \
             --fast \
             --dont-check-for-updates \
@@ -156,8 +155,8 @@ jobs:
             --no-webdriver-manager \
             --on-finish 'exit' \
             --session \
-            --discord ${{ secrets.DISCORD_URL }}
-            #--headless \
+            --discord ${{ secrets.DISCORD_URL }} \
+            --headless
             #--no-images \
             #--telegram ${{ secrets.TELEGRAM_API_TOKEN }} ${{ secrets.TELEGRAM_USERID }}
             
