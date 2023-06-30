@@ -147,17 +147,17 @@ jobs:
         echo "$(date) | INFO  | Configuring wasabi..."
         echo "$(date) | INFO  | Starting wasabi"      
         python ms_rewards_farmer.py \
-            --browser uc \
+            --headless \
             --fast \
             --dont-check-for-updates \
             --dont-check-internet \
             --error \
             --no-webdriver-manager \
             --on-finish 'exit' \
+            --no-images \
+            --repeat-shopping \
             --session \
-            --discord ${{ secrets.DISCORD_URL }} \
-            --headless
-            #--no-images \
+            --discord ${{ secrets.DISCORD_URL }}
             #--telegram ${{ secrets.TELEGRAM_API_TOKEN }} ${{ secrets.TELEGRAM_USERID }}
   notify:
     name: Notify
