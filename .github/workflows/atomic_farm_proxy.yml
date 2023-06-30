@@ -159,9 +159,6 @@ jobs:
             --headless
             #--no-images \
             #--telegram ${{ secrets.TELEGRAM_API_TOKEN }} ${{ secrets.TELEGRAM_USERID }}
-            
-            
-            --browser uc --skip-unusual --virtual-display
   notify:
     name: Notify
     runs-on: ubuntu-latest
