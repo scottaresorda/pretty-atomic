@@ -174,8 +174,12 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
+      
+        proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '\r')
+
+
         echo "$(date) | INFO  | Proxy settings2:"
-        echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
+        echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
 
         docker network create proxynetwork
         docker run \
@@ -190,10 +194,10 @@ jobs:
           -e TELEGRAM_USERID=${{ secrets.TELEGRAM_USERID }} \
           -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
           -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
-          -e HTTP_PROXY="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
-          -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
-          -e HTTPS_PROXY="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
-          -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e HTTP_PROXY="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e HTTPS_PROXY="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
         ${{ secrets.CONTAINER_IMAGE }}
 
   notify:
