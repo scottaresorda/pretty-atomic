@@ -22,7 +22,7 @@ jobs:
     #    to: ${{ secrets.TELEGRAM_USERID }}
     #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
     #    message: |
-    #      Job for account 8 - folatoesenti starting!
+    #      Job for account ${{ github.actor }} starting!
     - name: Get Accounts
       id: get-accounts
       env:
@@ -174,7 +174,9 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
+        docker network create mynetwork
         docker run \
+          --network=mynetwork \
           -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
           -e GOOGLE_SHEETS_CREDENTIALS_B64=${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} \
           -e GOOGLE_SHEETS_TOKEN_B64=${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} \
@@ -201,4 +203,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account 8 - folatoesenti was executed!
+          Job for account ${{ github.actor }} was executed!
