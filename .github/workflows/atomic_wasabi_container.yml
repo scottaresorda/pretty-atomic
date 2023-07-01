@@ -175,7 +175,7 @@ jobs:
       timeout-minutes: 30
       run: |
         echo "$(date) | INFO  | Proxy settings2:"
-        echo "-e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
+        echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
 
         docker network create proxynetwork
         docker run \
