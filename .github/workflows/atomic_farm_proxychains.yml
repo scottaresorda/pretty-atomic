@@ -22,7 +22,7 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account estrattorioboista starting!
+          Job for account ${{ github.actor }} starting!
     - name: Get Accounts
       id: get-accounts
       env:
@@ -186,4 +186,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account estrattorioboista was executed!
+          Job for account ${{ github.actor }} was executed!
