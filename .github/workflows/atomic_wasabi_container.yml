@@ -174,9 +174,10 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
-        docker network create mynetwork
+        docker network create proxynetwork
         docker run \
-          --network=mynetwork \
+          --rm \
+          --network=proxynetwork \
           -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
           -e GOOGLE_SHEETS_CREDENTIALS_B64=${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} \
           -e GOOGLE_SHEETS_TOKEN_B64=${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} \
@@ -187,7 +188,9 @@ jobs:
           -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
           -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
           -e HTTP_PROXY="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e http_proxy="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
           -e HTTPS_PROXY="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e https_proxy="http://${{ steps.sets-secrets.outputs.secret-user }}:${{ steps.sets-secrets.outputs.secret-pass }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
         ${{ secrets.CONTAINER_IMAGE }}
 
   notify:
