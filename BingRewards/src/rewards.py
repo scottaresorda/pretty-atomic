@@ -33,8 +33,6 @@ class Rewards:
     __BING_URL = "https://bing.com"
     __DASHBOARD_URL = "https://rewards.bing.com/"
 
-    __WHATISMYIP_URL = "https://ifconfig.co/json"
-
     __WEB_DRIVER_WAIT_LONG = 30
     __WEB_DRIVER_WAIT_SHORT = 5
 
@@ -56,7 +54,6 @@ class Rewards:
         nosandbox=False,
         google_trends_geo="US",
         messengers=None,
-        proxy=None
     ):
         self.email = email
         self.password = password
@@ -71,7 +68,6 @@ class Rewards:
         self.driver_factory = driver_factory
         self.google_trends_geo = google_trends_geo
         self.messengers = messengers if messengers is not None else []
-        self.proxy = proxy
 
     def __get_sys_out_prefix(self, lvl, end):
         prefix = " " * (self.__SYS_OUT_TAB_LEN * (lvl - 1) - (lvl - 1))
@@ -130,15 +126,11 @@ class Rewards:
             )
 
         # made it to the destination page
-        print(f"Current URL: {current_url}")
-        print(f"Final URL Regex Pattern: {final_url_regex_pattern}")
-
         if re.match(final_url_regex_pattern, current_url):
             return True
 
         elif "signin-oauth" in current_url:
             try:
-                print("We are in signin-oauth page")
                 # check the url
                 WebDriverWait(self.driver, self.__WEB_DRIVER_WAIT_LONG).until(
                     EC.url_changes(current_url)
@@ -155,8 +147,7 @@ class Rewards:
                     EC.url_changes(current_url)
                 )
             except TimeoutException:
-                print(
-                    f"Stuck on page redirect, try again. Last url: {current_url}")
+                print(f"Stuck on page redirect, try again. Last url: {current_url}")
                 raise
 
         elif "https://login.live.com/ppsecure" in current_url:
@@ -191,8 +182,7 @@ class Rewards:
                     )
                     raise
                 # yes, stay signed in
-                self.driver.find_element(
-                    By.XPATH, '//*[@id="idSIButton9"]').click()
+                self.driver.find_element(By.XPATH, '//*[@id="idSIButton9"]').click()
 
         # 'agree to terms and conditions' page
         elif "https://account.live.com/tou" in current_url:
@@ -227,8 +217,7 @@ class Rewards:
             # Set the signal handler for SIGALRM (alarm signal)
             signal.signal(signal.SIGALRM, alarm_handler)
             signal.alarm(90)
-            security_code = input(
-                "**Enter the `security code` emailed to you: ")
+            security_code = input("**Enter the `security code` emailed to you: ")
             signal.alarm(0)  # Cancel the alarm if email entered
 
             # Enter the security code
@@ -247,7 +236,6 @@ class Rewards:
         # 2FA page: login url doesn't change
         elif current_url == self.__LOGIN_URL:
             # standard 2FA page
-            self.print_page_content()
             try:
                 authenticator_code = self.driver.find_element(
                     By.ID, "idRemoteNGC_DisplaySign"
@@ -312,8 +300,7 @@ class Rewards:
                 EC.visibility_of_element_located((By.ID, "i0118"))
             ).send_keys(self.password, Keys.RETURN)
         except TimeoutException:
-            ActionChains(self.driver).send_keys(
-                self.password, Keys.RETURN).perform()
+            ActionChains(self.driver).send_keys(self.password, Keys.RETURN).perform()
 
         is_login_complete = False
         while not is_login_complete:
@@ -373,8 +360,7 @@ class Rewards:
         if f"{self.__DASHBOARD_URL}welcome" == current_url:
             try:
                 WebDriverWait(self.driver, self.__WEB_DRIVER_WAIT_LONG).until(
-                    EC.element_to_be_clickable(
-                        (By.ID, "start-earning-rewards-link"))
+                    EC.element_to_be_clickable((By.ID, "start-earning-rewards-link"))
                 ).click()
             except TimeoutException:
                 raise RuntimeError(
@@ -429,25 +415,6 @@ class Rewards:
             return s[start:end]
         except ValueError:
             return ""
-
-    def get_current_ip_information(self):
-        max_try_count = 3
-        for try_count in range(1, max_try_count + 1):
-            try:
-                self.__get_driver(self.driver_factory.WEB_DEVICE, True)
-                self.driver.get(self.__WHATISMYIP_URL)
-                ipinfo = self.driver.page_source,
-                ipinfo = self.driver.find_element(By.TAG_NAME, 'pre').text
-                ipinfo = json.loads(ipinfo)
-                self.driver.quit()
-                return ipinfo
-            except (json.decoder.JSONDecodeError, ValueError):
-                print(f"\nJSONDecodeError try_count {try_count}")
-                if try_count == (max_try_count):
-                    raise
-            except Exception as e:
-                print(e)
-                raise
 
     def get_dashboard_data(self):
         max_try_count = 3
@@ -566,8 +533,7 @@ class Rewards:
                 query = self.__queries[0]
                 self.__queries = self.__queries[1:]
             else:
-                last_request_time = self.__update_search_queries(
-                    last_request_time)
+                last_request_time = self.__update_search_queries(last_request_time)
                 continue
             if query not in self.search_hist:
                 break
@@ -655,8 +621,7 @@ class Rewards:
                         search_type
                     )
                     expected_current_progress = current_progress
-                    self.__sys_out_progress(
-                        current_progress, complete_progress, 3)
+                    self.__sys_out_progress(current_progress, complete_progress, 3)
                     current_searches_before_checkpoint = 0
 
                 if current_progress == complete_progress:
@@ -770,8 +735,7 @@ class Rewards:
                 quiz_current_progress,
                 quiz_complete_progress,
             ) = self.__get_quiz_progress()
-            self.__sys_out_progress(
-                quiz_current_progress, quiz_complete_progress, 4)
+            self.__sys_out_progress(quiz_current_progress, quiz_complete_progress, 4)
             # either on the last question, or just completed
             if quiz_current_progress == quiz_complete_progress - 1:
                 try:
@@ -868,8 +832,7 @@ class Rewards:
                     int, progress.split(progress_delimiter)
                 )
 
-                self.__sys_out_progress(
-                    current_question - 1, complete_progress, 4)
+                self.__sys_out_progress(current_question - 1, complete_progress, 4)
 
                 answer_encode_key = self.driver.execute_script("return _G.IG")
 
@@ -976,8 +939,7 @@ class Rewards:
                     complete_progress,
                 ) = self.__get_quiz_progress()
                 if complete_progress > 0:
-                    self.__sys_out_progress(
-                        current_progress, complete_progress, 4)
+                    self.__sys_out_progress(current_progress, complete_progress, 4)
 
                 # get all correct combinations so to not use them again
                 correct_options = []
@@ -1009,10 +971,8 @@ class Rewards:
                     prev_progress = current_progress
                 else:
                     # update incorrect options
-                    incorrect_options.append(
-                        (from_option_index, to_option_index))
-                    incorrect_options.append(
-                        (to_option_index, from_option_index))
+                    incorrect_options.append((from_option_index, to_option_index))
+                    incorrect_options.append((to_option_index, from_option_index))
 
                 exit_code = -1  # no choices were swapped
                 for combo in to_from_combos:
@@ -1030,8 +990,7 @@ class Rewards:
                             EC.visibility_of_element_located(
                                 (
                                     By.ID,
-                                    "rqAnswerOption{0}".format(
-                                        from_option_index),
+                                    "rqAnswerOption{0}".format(from_option_index),
                                 )
                             )
                         )
@@ -1114,8 +1073,7 @@ class Rewards:
                 if complete_progress > 0:
                     # selected the correct answer
                     if current_progress != prev_progress:
-                        self.__sys_out_progress(
-                            current_progress, complete_progress, 4)
+                        self.__sys_out_progress(current_progress, complete_progress, 4)
                         prev_progress = current_progress
                         prev_options = []
                         try_count = 0
@@ -1156,8 +1114,7 @@ class Rewards:
                                 )
                                 break
                             else:
-                                self.__sys_out(
-                                    "Already completed quiz", 3, True)
+                                self.__sys_out("Already completed quiz", 3, True)
                                 return True
                     except TimeoutException as e:
                         print(f"Failed on last question, {e}")
@@ -1278,8 +1235,7 @@ class Rewards:
                     self.driver.refresh()
                     try_count += 1
                     if try_count == 2:
-                        self.__sys_out(
-                            "Quiz2 element not clickable", 3, True, True)
+                        self.__sys_out("Quiz2 element not clickable", 3, True, True)
                         return False
 
         # if current_progress == complete_progress:
@@ -1408,17 +1364,14 @@ class Rewards:
 
             if completed == -1:
                 self.__sys_out(
-                    "Sign in Bing bug for offer '{0}', will try again".format(
-                        title),
+                    "Sign in Bing bug for offer '{0}', will try again".format(title),
                     2,
                     True,
                 )
             elif completed:
-                self.__sys_out(
-                    "Successfully completed '{0}'".format(title), 2, True)
+                self.__sys_out("Successfully completed '{0}'".format(title), 2, True)
             else:
-                self.__sys_out(
-                    "Failed to complete '{0}'".format(title), 2, True)
+                self.__sys_out("Failed to complete '{0}'".format(title), 2, True)
 
             self.driver.switch_to_first_tab()
             self.__open_dashboard()  # for stale element exception
@@ -1636,8 +1589,7 @@ class Rewards:
                 # check if valid punchcard is completed
                 is_complete_punchcard = punchcard["parentPromotion"]["complete"]
                 if not is_complete_punchcard:
-                    self.__sys_out(
-                        f'Punch card "{title}" is not complete yet.', 2)
+                    self.__sys_out(f'Punch card "{title}" is not complete yet.', 2)
                     # complete latest punch card activity
                     activity_index = self.__punchcard_activity(
                         parent_url, punchcard["childPromotions"]
@@ -1660,8 +1612,7 @@ class Rewards:
                             3,
                         )
                 else:
-                    self.__sys_out(
-                        f'Punch card "{title}" is already completed.', 2)
+                    self.__sys_out(f'Punch card "{title}" is already completed.', 2)
 
         # no punchcards offered
         if not has_valid_punch:
@@ -1734,12 +1685,10 @@ class Rewards:
             # Make sure user can access url, else auto fail
             try:
                 WebDriverWait(self.driver, self.__WEB_DRIVER_WAIT_SHORT).until(
-                    EC.presence_of_element_located(
-                        (By.CLASS_NAME, "videoTitle"))
+                    EC.presence_of_element_located((By.CLASS_NAME, "videoTitle"))
                 )
             except TimeoutException:
-                self.__sys_out(
-                    f"url could not be loaded, aborting videos:\n{url}", 3)
+                self.__sys_out(f"url could not be loaded, aborting videos:\n{url}", 3)
                 return False
 
             # Sleep + refresh so that reward status can be loaded
@@ -1751,8 +1700,7 @@ class Rewards:
             try:
                 # check if valid badge
                 WebDriverWait(self.driver, self.__WEB_DRIVER_WAIT_SHORT).until(
-                    EC.visibility_of_element_located(
-                        (By.TAG_NAME, "div.pointsEarned"))
+                    EC.visibility_of_element_located((By.TAG_NAME, "div.pointsEarned"))
                 )
                 self.__sys_out("Points already earned for video", 3)
                 video_status = "Success"
@@ -1843,13 +1791,12 @@ class Rewards:
             error_msg = traceback.format_exc()
             self.__sys_out(f"Error checking rewards status -\n {error_msg}", 1)
 
-    def __get_driver(self, device_type, skip_login=False):
+    def __get_driver(self, device_type):
         try:
             self.driver = self.driver_factory.get_driver(
-                device_type, self.headless, self.cookies, self.nosandbox, self.proxy
+                device_type, self.headless, self.cookies, self.nosandbox
             )
-            if not skip_login:
-                self.__login()
+            self.__login()
         except Exception as e:
             try:
                 self.driver.quit()

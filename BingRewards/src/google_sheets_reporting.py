@@ -19,7 +19,7 @@ class GoogleSheetsReporting:
         self.sheet_id = sheet_id
         self.tab_name = tab_name
 
-    def add_row(self, stats, email, ipinfo):
+    def add_row(self, stats, email):
         # If modifying these scopes, delete the file token.json.
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
@@ -79,8 +79,6 @@ class GoogleSheetsReporting:
                     "streak_count",
                     "available_points",
                     "lifetime_points",
-                    "running_ip",
-                    "running_country"
                 ]
             ]
 
@@ -103,8 +101,6 @@ class GoogleSheetsReporting:
                         stats.streak_count,
                         stats.available_points,
                         stats.lifetime_points,
-                        ipinfo["ip"] if ipinfo is not None else '',
-                        ipinfo["country"] if ipinfo is not None else ''
                     ]
                 ]
             }

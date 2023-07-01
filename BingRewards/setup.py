@@ -30,26 +30,17 @@ def process_microsoft_account_args(args):
 
     [{
       "email": "abc@yahoo.com",
-      "password": "123",
-      "proxy_host": "1.2.3.4",
-      "proxy_port": "1234",
-      "proxy_username": "abcproxyusername",
-      "proxy_password": "abcd"
+      "password": "123"
     },
     {
       "email": "def@gmail.com",
-      "password": "234",
-      "proxy_host": "5.6.7.8",
-      "proxy_port": "5678",
-      "proxy_username": "defproxyusername",
-      "proxy_password": "5678",
+      "password": "234"
     }]
     """
     # https://stackoverflow.com/a/62887877
     return [
-        {"email": zipped[0], "password": zipped[1], "proxy_host": zipped[2],
-            "proxy_port": zipped[3], "proxy_username": zipped[4], "proxy_password": zipped[5]}
-        for zipped in zip(args.email, args.password, args.proxy_host, args.proxy_port, args.proxy_username, args.proxy_password)
+        {"email": zipped[0], "password": zipped[1]}
+        for zipped in zip(args.email, args.password)
     ]
 
 
@@ -61,10 +52,6 @@ class Setup:
         "telegram_api_token": None,
         "google_sheets_sheet_id": None,
         "google_sheets_tab_name": None,
-        # "proxy_host": None,
-        # "proxy_port": None,
-        # "proxy_username": None,
-        # "proxy_password": None,
     }
 
     def exit(self):
@@ -105,39 +92,19 @@ class Setup:
 
         account_index = len(new_credentials["microsoft_accounts"]) + 1
         while True:
-            entered_proxy_port = None
-            entered_proxy_username = None
-            entered_proxy_password = None
-
             entered_email = input(f"*MS Rewards Email {account_index}: ")
             if entered_email == "":
                 break
 
             entered_pw = getpass.getpass(f"*Password {account_index}: ")
-            if entered_pw == "":
-                break
 
-            entered_proxy_host = getpass.getpass(
-                f"*Proxy host {account_index} (leave empty if no proxy): ")
-            if (entered_proxy_host != ""):
-                entered_proxy_port = getpass.getpass(
-                    f"*Proxy port {account_index}: ")
-                entered_proxy_username = getpass.getpass(
-                    f"*Proxy username {account_index}: ")
-                entered_proxy_password = getpass.getpass(
-                    f"*Proxy password {account_index}: ")
-            else:
-                entered_proxy_host = None
-
-            account_dict = {"email": entered_email, "password": entered_pw,
-                            "proxy_host": entered_proxy_host, "proxy_port": entered_proxy_port,
-                            "proxy_username": entered_proxy_username, "proxy_password": entered_proxy_password}
+            account_dict = {"email": entered_email, "password": entered_pw}
             new_credentials["microsoft_accounts"].append(account_dict)
             account_index += 1
         return new_credentials
 
     def write_json(self, credentials):
-        with open(CONFIG_FILE_PATH, "w", newline="") as f:
+        with open(CONFIG_FILE_PATH, "w") as f:
             json.dump(credentials, f, indent=4, sort_keys=True)
             print(f"\n{CONFIG_FILE} created/updated successfully")
 
@@ -177,8 +144,7 @@ class Setup:
 
             # port code over if config.json exists - v2
             if os.path.isfile(deprecation.DEPRECATED_CONFIG_FILE_PATH_JSON):
-                ported_credentials = deprecation.port_json(
-                    self.credentials_template)
+                ported_credentials = deprecation.port_json(self.credentials_template)
                 self.write_json(ported_credentials)
                 return
 
@@ -199,10 +165,6 @@ class Setup:
 
         else:  # user passed in cmd line args, parse args
             new_credentials = self.process_args(existing_credentials)
-
-        print(f"{new_credentials}")
-        print(f"{existing_credentials}")
-
         if new_credentials != existing_credentials:
             self.write_json(new_credentials)
         else:

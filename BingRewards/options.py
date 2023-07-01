@@ -17,8 +17,7 @@ def print_args(args):
     for protected_field in protected_fields:
         if protected_field in d_args:
             del d_args[protected_field]
-    result = ", ".join(str(key) + "=" + str(value)
-                       for key, value in d_args.items())
+    result = ", ".join(str(key) + "=" + str(value) for key, value in d_args.items())
 
     print(f"\nCommand line options selected:\n{result}")
 
@@ -74,41 +73,6 @@ def get_parent_parser():
         Warning2: wrap your password in single quotes if it has special chars
         """,
     )
-
-    parent_parser.add_argument(
-        "--proxy_host",
-        nargs="*",
-        help="""The proxy host to use for this microsoft account.\
-        You can add/use multiple proxy host i.e " --proxy_host '1.2.3.4' '5.6.7.8'
-        """,
-    )
-
-    parent_parser.add_argument(
-        "--proxy_port",
-        nargs="*",
-        help="""The proxy port to use for this microsoft account.\
-        You can add/use multiple proxy port i.e " --proxy_port '1234' '5678'
-        """,
-    )
-
-    parent_parser.add_argument(
-        "--proxy_username",
-        nargs="*",
-        help="""For authenticated proxy, this is the username to use for the proxy set for this microsoft account.\
-        You can add/use multiple proxy username i.e " --proxy_username 'abcUser' 'defUser'
-        """,
-    )
-
-    parent_parser.add_argument(
-        "--proxy_password",
-        nargs="*",
-        help="""For authenticated proxy, this is the password to use for the proxy set for this microsoft account.\
-        You can add/use multiple passwords i.e " --proxy_password 'pw123' 'pw456' "\
-        Warning1: your plain text password will be saved in your bash history.\
-        Warning2: wrap your password in single quotes if it has special chars
-        """,
-    )
-
     return parent_parser
 
 

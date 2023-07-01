@@ -21,7 +21,6 @@ from selenium.common.exceptions import (
 import re
 import random
 import string
-import tempfile
 
 
 class EventListener(AbstractEventListener):
@@ -109,8 +108,7 @@ class DriverFactory(ABC):
             return
 
         letters = string.ascii_lowercase
-        cdc_replacement = "".join(random.choice(letters)
-                                  for i in range(3)) + "_"
+        cdc_replacement = "".join(random.choice(letters) for i in range(3)) + "_"
         perl_command = f"perl -pi -e 's/cdc_/{cdc_replacement}/g' {driver_path}"
 
         try:
@@ -154,8 +152,7 @@ class DriverFactory(ABC):
             os.rename(os.path.join(extracted_dir, cls.driver_name), driver_path)
         # for Windows
         except FileExistsError:
-            os.replace(os.path.join(extracted_dir,
-                       cls.driver_name), driver_path)
+            os.replace(os.path.join(extracted_dir, cls.driver_name), driver_path)
 
         shutil.rmtree(extracted_dir)
         os.chmod(driver_path, 0o755)
@@ -164,69 +161,11 @@ class DriverFactory(ABC):
         # if cls.WebDriverCls == webdriver.Chrome:
         #    cls.replace_selenium_marker(driver_path)
 
-    def createProxyExtension(proxy_dir: str, username: str, password: str) -> None:
-        """Create proxy extension"""
-        import string
-        # skipcq: PYL-C0209
-        manifest_json = """{
-    "version": "1.0.0",
-    "manifest_version": 2,
-    "name": "%s",
-    "permissions": [
-        "proxy",
-        "tabs",
-        "unlimitedStorage",
-        "storage",
-        "<all_urls>",
-        "webRequest",
-        "webRequestBlocking"
-    ],
-    "background": {
-        "scripts": ["background.js"]
-    },
-    "minimum_chrome_version":"70.0.0"
-}
-""" % (
-            ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-        )
-
-        # skipcq: PYL-C0209
-        background_js = """function callbackFn(details) {
-    return {
-        authCredentials: {
-            username: "%s",
-            password: "%s"
-        }
-    };
-}
-chrome.webRequest.onAuthRequired.addListener(
-    callbackFn,
-    {urls: ["<all_urls>"]},
-    ['blocking']
-);
-        """ % (
-            username,
-            password,
-        )
-
-        if os.path.isdir(proxy_dir):
-            with open(os.path.join(proxy_dir, "manifest.json"), 'w') as f:
-                f.write(manifest_json)
-            with open(os.path.join(proxy_dir, "background.js"), 'w') as f:
-                f.write(background_js)
-
     @classmethod
-    def add_driver_options(cls, device, headless, cookies, nosandbox, proxy, temp_dir):
+    def add_driver_options(cls, device, headless, cookies, nosandbox):
         options = cls.WebDriverOptions()
-        if proxy is not None and proxy["proxy_url"] is not None:
-            options.add_argument(f'--proxy-server={proxy["proxy_url"]}')
-            if proxy["proxy_username"] is not None:
-                cls.createProxyExtension(
-                    temp_dir.name, proxy["proxy_username"], proxy["proxy_password"])
-                options.add_argument("--load-extension=" + temp_dir.name)
-            else:
-                options.add_argument("--disable-extensions")
 
+        options.add_argument("--disable-extensions")
         options.add_argument("--window-size=1280,1024")
         options.add_argument("--log-level=3")
         options.add_argument("--disable-notifications")
@@ -245,7 +184,7 @@ chrome.webRequest.onAuthRequired.addListener(
         )
 
         if headless:
-            options.add_argument("--headless=new")
+            options.add_argument("--headless")
 
         if device == cls.WEB_DEVICE:
             options.add_argument("user-agent=" + cls.__WEB_USER_AGENT)
@@ -262,11 +201,9 @@ chrome.webRequest.onAuthRequired.addListener(
         return options
 
     @classmethod
-    def get_driver(cls, device, headless, cookies, nosandbox, proxy) -> Driver:
+    def get_driver(cls, device, headless, cookies, nosandbox) -> Driver:
         dl_try_count = 0
-        temp_dir = tempfile.TemporaryDirectory()
-        options = cls.add_driver_options(
-            device, headless, cookies, nosandbox, proxy, temp_dir)
+        options = cls.add_driver_options(device, headless, cookies, nosandbox)
 
         # raspberry pi: assumes driver preinstalled by user
         if platform.machine() in ["armv7l", "aarch64"]:

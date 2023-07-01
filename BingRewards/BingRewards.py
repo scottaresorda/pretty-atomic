@@ -62,8 +62,7 @@ def get_telegram_messenger(config, args):
                 "if you want Telegram notifications."
             )
     else:
-        telegram_messenger = TelegramMessenger(
-            telegram_api_token, telegram_userid)
+        telegram_messenger = TelegramMessenger(telegram_api_token, telegram_userid)
     return telegram_messenger
 
 
@@ -84,27 +83,6 @@ def get_discord_messenger(config, args):
     return discord_messenger
 
 
-def get_proxy_configuration(microsoft_account):
-    proxy_host = microsoft_account["proxy_host"]
-    proxy_password = microsoft_account["proxy_password"].strip()
-    proxy_port = microsoft_account["proxy_port"]
-    proxy_username = microsoft_account["proxy_username"]
-    proxy_url = None
-
-    if (proxy_host != "" and proxy_host is not None) and (proxy_port != "" and proxy_port is not None):
-        proxy_url = f"{proxy_host}:{proxy_port}"
-
-    if proxy_url is None:
-        return None
-
-    proxy = {
-        "proxy_url": proxy_url,
-        "proxy_username": proxy_username,
-        "proxy_password": proxy_password
-    }
-    return proxy
-
-
 def get_google_sheets_reporting(config, args):
     sheet_id = config.get("google_sheets_sheet_id")
     tab_name = config.get("google_sheets_tab_name")
@@ -123,16 +101,15 @@ def get_google_sheets_reporting(config, args):
     return google_sheets_reporting
 
 
-def message_stats(messengers, google_sheets_reporting, rewards, hist_log, email, ipinfo):
+def message_stats(messengers, google_sheets_reporting, rewards, hist_log, email):
     """Send run notification using app"""
 
     run_hist_str = hist_log.get_run_hist()[-1].split(": ")[1]
     for messenger in messengers:
-        messenger.send_reward_message(
-            rewards.stats.stats_str, run_hist_str, email)
+        messenger.send_reward_message(rewards.stats.stats_str, run_hist_str, email)
 
     if google_sheets_reporting:
-        google_sheets_reporting.add_row(rewards.stats, email, ipinfo)
+        google_sheets_reporting.add_row(rewards.stats, email)
 
 
 def handle_search_exception(hist_log, rewards, messengers):
@@ -156,7 +133,7 @@ def handle_search_exception(hist_log, rewards, messengers):
     return error_msg
 
 
-def run_account(email, password, args, messengers, google_sheets_reporting, proxy):
+def run_account(email, password, args, messengers, google_sheets_reporting):
     """Run one individual account n times"""
     rewards = Rewards(
         email,
@@ -168,7 +145,6 @@ def run_account(email, password, args, messengers, google_sheets_reporting, prox
         args.nosandbox,
         args.google_trends_geo,
         messengers,
-        proxy
     )
 
     stats_log = StatsJsonLog(os.path.join(LOG_DIR, STATS_LOG), email)
@@ -202,13 +178,6 @@ def run_account(email, password, args, messengers, google_sheets_reporting, prox
         fitness_videos_hist = hist_log.get_fitness_videos_hist()
 
         print(f"\n\nRun {current_attempts+1} [{email}]:")
-
-        ipinfo = None
-        try:
-            ipinfo = rewards.get_current_ip_information()
-            print(f"\n\nIP INFO [{ipinfo}]:")
-        except:
-            ipinfo = None
 
         try:
             rewards.complete_search_type(
@@ -247,8 +216,7 @@ def run_account(email, password, args, messengers, google_sheets_reporting, prox
             formatted_stat_str = "; ".join(rewards.stats.stats_str)
             stats_log.add_entry_and_write(formatted_stat_str, email)
 
-            message_stats(messengers, google_sheets_reporting,
-                          rewards, hist_log, email, ipinfo)
+            message_stats(messengers, google_sheets_reporting, rewards, hist_log, email)
 
     # log if searches still failing after running 'n' times
     if not completion.is_search_type_completed(args.search_type):
@@ -300,14 +268,12 @@ def main():
     google_sheets_reporting = get_google_sheets_reporting(config, args)
 
     for microsoft_account in microsoft_accounts:
-        proxy = get_proxy_configuration(microsoft_account)
         run_account(
             microsoft_account["email"],
             microsoft_account["password"],
             args,
             messengers,
             google_sheets_reporting,
-            proxy
         )
 
 
