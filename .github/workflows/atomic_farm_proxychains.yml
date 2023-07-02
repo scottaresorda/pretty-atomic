@@ -12,7 +12,7 @@ jobs:
   # define matrix for all executions
   # ------------------------
   DefineMatrix:
-    runs-on: ubuntu-latest
+    runs-on: ARM64
     outputs:
       accounts: ${{ steps.get-accounts.outputs.IDs }}
     steps:
@@ -52,7 +52,7 @@ jobs:
   # deploy a container for the job
   wasabi:
     name: Run container
-    runs-on: ubuntu-latest
+    runs-on: ARM64
     continue-on-error: true
     needs:
       - DefineMatrix
