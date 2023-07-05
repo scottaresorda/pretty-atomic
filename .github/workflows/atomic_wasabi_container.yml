@@ -4,8 +4,8 @@ on:
     inputs:
       accounts_ondemand:
         description: 'Enter the accounts, separated by commas'
-  schedule:
-    - cron: '11 9,12 * * *'
+  #schedule:
+  #  - cron: '11 9,12 * * *'
     #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
 
 jobs:
@@ -176,6 +176,11 @@ jobs:
       run: |
         proxy_username=$(echo "${{ steps.sets-secrets.outputs.proxy_username }}" | tr -d '\r')
         proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '\r')
+        
+        echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
+        echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:$(echo ${{ steps.sets-secrets.outputs.proxy_password }} | tr -d '\r')@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
+          
+        
         docker run \
           --rm \
           -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
