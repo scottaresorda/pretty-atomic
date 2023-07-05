@@ -190,7 +190,7 @@ jobs:
           -e http_proxy=http://${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
           -e https_proxy=http://${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
           -e proxy_username=${{ steps.sets-secrets.outputs.proxy_username }} \
-          -e proxy_password=${{ steps.sets-secrets.outputs.proxy_password }} \
+          -e proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '\r') \
           -e no_proxy="localhost,127.0.0.1" \
         ${{ secrets.CONTAINER_IMAGE }}
 
