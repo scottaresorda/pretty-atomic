@@ -305,7 +305,8 @@ class Rewards:
         is_login_complete = False
         while not is_login_complete:
             time.sleep(1)
-            login_page_loaded_regex = r"https://(account|login).microsoft.com/.*mkt.*"
+            #login_page_loaded_regex = r"https://(account|login).microsoft.com/.*mkt.*"
+            login_page_loaded_regex = r"https://(account|login).(live|microsoft).com/.*mkt.*"
             is_login_complete = self.__check_login_url(
                 self.driver.current_url, login_page_loaded_regex
             )
