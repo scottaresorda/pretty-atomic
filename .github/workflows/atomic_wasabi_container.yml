@@ -174,8 +174,7 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
-        proxy_username=$(echo "${{ steps.sets-secrets.outputs.proxy_username }}" | tr -d '\r')
-        proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '\r')
+        proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
         
         echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
         echo "http://${{ steps.sets-secrets.outputs.proxy_username }}:$(echo ${{ steps.sets-secrets.outputs.proxy_password }} | tr -d '\r')@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
