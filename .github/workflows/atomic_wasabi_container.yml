@@ -177,7 +177,7 @@ jobs:
         proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
         
         echo "${{ steps.sets-secrets.outputs.proxy_username }}_$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
-        echo "${{ steps.sets-secrets.outputs.proxy_username }}_$(echo ${{ steps.sets-secrets.outputs.proxy_password }} | tr -d '\r')@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
+        echo "${{ steps.sets-secrets.outputs.proxy_username }}_$(echo ${{ steps.sets-secrets.outputs.proxy_password }} | tr -d '[:space:]')@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
           
         
         docker run \
