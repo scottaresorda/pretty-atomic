@@ -5,7 +5,7 @@ on:
       accounts_ondemand:
         description: 'Enter the accounts, separated by commas'
   schedule:
-    - cron: '11 12 * * *'
+    - cron: '11 8 * * *'
     #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} starting!
+          Job for account ${{ github.actor }} - ${{ env.GITHUB_WORKFLOW }}starting!
     - name: Get Accounts
       id: get-accounts
       env:
@@ -186,4 +186,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} was executed!
+          Job for account ${{ github.actor }} - ${{ env.GITHUB_WORKFLOW }} was executed!
