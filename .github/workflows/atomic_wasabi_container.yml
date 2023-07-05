@@ -141,12 +141,10 @@ jobs:
 
           # Split the element based on colons (:)
           IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
-          
-          proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
-          
-          #echo "::add-mask::$proxy_username"
-          #echo "::add-mask::$proxy_password_strip"
-          
+
+          echo "::add-mask::$proxy_username"
+          echo "::add-mask::$proxy_password"          
+
           proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
           echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
           echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
