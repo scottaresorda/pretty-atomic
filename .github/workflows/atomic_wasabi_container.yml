@@ -141,20 +141,24 @@ jobs:
 
           # Split the element based on colons (:)
           IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
-          #echo "::add-mask::$proxy_username"
-          #echo "::add-mask::$proxy_password"
           
+          proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
+          
+          #echo "::add-mask::$proxy_username"
+          #echo "::add-mask::$proxy_password_strip"
+          
+          proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
           echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
           echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
           echo "proxy_username=$proxy_username" >> $GITHUB_OUTPUT
-          echo "proxy_password=$proxy_password" >> $GITHUB_OUTPUT
+          echo "proxy_password=$proxy_password_strip" >> $GITHUB_OUTPUT
           
           # Print the extracted values
           echo "$(date) | INFO  | Proxy settings:"   
           echo "IP: $proxy_host"
           echo "Port: $proxy_port"
           echo "User: $proxy_username"
-          echo "Password: $proxy_password"
+          echo "Password: $proxy_password_strip"
 
         else
           echo "The proxy list is empty."
@@ -174,7 +178,7 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
-        proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
+        #proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
     
         docker run \
           --rm \
@@ -187,8 +191,8 @@ jobs:
           -e TELEGRAM_USERID=${{ secrets.TELEGRAM_USERID }} \
           -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
           -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
-          -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
-          -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:$proxy_password@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
           -e no_proxy="localhost,127.0.0.1" \
         ${{ secrets.CONTAINER_IMAGE }}
 
