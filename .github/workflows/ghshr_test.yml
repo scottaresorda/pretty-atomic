@@ -11,7 +11,6 @@ jobs:
       - name: Print Runner Name
         run: echo "Runner is ARM"
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      # Resto delle fasi del workflow...
+      - name: Run the Docker container
+        run: |
+          docker run --rm arm64v8/hello-world
