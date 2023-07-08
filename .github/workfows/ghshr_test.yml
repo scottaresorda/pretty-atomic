@@ -1,0 +1,17 @@
+name: Self-Hosted Runner Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Print Runner Name
+        run: echo "Runner Name: ${{ env.RUNNER_NAME }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Resto delle fasi del workflow...
