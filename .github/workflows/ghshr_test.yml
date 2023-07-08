@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Print Runner Name
-        run: echo "Runner Name: ${{ env.RUNNER_NAME }}"
+        run: echo "Runner is ARM"
 
       - name: Checkout repository
         uses: actions/checkout@v2
