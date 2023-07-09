@@ -73,7 +73,7 @@ jobs:
         set -ex \
         && apt-get update --no-install-recommends -y \
         && apt-get install --no-install-recommends -y  \
-          chromium \ 
+          chromium-bsu \ 
           chromium-driver \ # download driver for arm64
         # arm64 driver location \
         && mkdir -p /usr/lib/chromium-browser/ \ 
