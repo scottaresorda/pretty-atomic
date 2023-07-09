@@ -67,19 +67,19 @@ jobs:
     #  uses: actions/setup-python@v4
     #  with:
     #    python-version: '3.11'
+
     - name: Install Chrome
       run: |
-        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-        sudo apt-get update
-        sudo apt-get install google-chrome-stable -y
-    - name: Download ChromeDriver
-      run: |
-        CHROME_DRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-        curl -sS -o chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
-        unzip chromedriver.zip
-        sudo mv chromedriver /usr/local/bin/chromedriver
-        sudo chmod +x /usr/local/bin/chromedriver
+        set -ex \
+        && apt-get update --no-install-recommends -y \
+        && apt-get install --no-install-recommends -y  \
+        chromium \ 
+		    # download driver for arm64
+		    chromium-driver \ 
+		    # arm64 driver location \
+        && mkdir -p /usr/lib/chromium-browser/ \ 
+		    && ln -s /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+   
     - name: Install dependencies
       run: |
         echo "$(date) | INFO  | Install dependencies ..."   
