@@ -16,13 +16,13 @@ jobs:
     outputs:
       accounts: ${{ steps.get-accounts.outputs.IDs }}
     steps:
-    - name: Notify to Telegram
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_USERID }}
-        token: ${{ secrets.TELEGRAM_API_TOKEN }}
-        message: |
-          Job for account ${{ github.actor }} - ${{ env.GITHUB_WORKFLOW }}starting!
+    #- name: Notify to Telegram
+    #  uses: appleboy/telegram-action@master
+    #  with:
+    #    to: ${{ secrets.TELEGRAM_USERID }}
+    #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
+    #    message: |
+    #      Job for account ${{ github.actor }} - ${{ env.GITHUB_WORKFLOW }}starting!
     - name: Get Accounts
       id: get-accounts
       env:
