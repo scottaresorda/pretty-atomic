@@ -77,7 +77,7 @@ jobs:
         rm -rf /var/lib/apt/lists/*
         # arm64 driver location
         mkdir -p /usr/lib/chromium-browser/
-        ln -s /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+        ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
 
     - name: Install dependencies
       run: |
