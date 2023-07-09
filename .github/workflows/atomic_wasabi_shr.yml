@@ -182,8 +182,7 @@ jobs:
           -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
           -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
           -e no_proxy="localhost,127.0.0.1" \
-        ghcr.io/furgonisangria/nonnetto:latest@sha256:57e8b48969ee87982834210d01eaf54dfc55c157ff3acd7dce22d093207190d1
-        #${{ secrets.CONTAINER_IMAGE }}
+        ${{ secrets.CONTAINER_IMAGE }}
 
   notify:
     name: Notify
