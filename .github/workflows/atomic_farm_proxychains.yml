@@ -73,12 +73,11 @@ jobs:
         set -ex \
         && apt-get update --no-install-recommends -y \
         && apt-get install --no-install-recommends -y  \
-        chromium \ 
-		    # download driver for arm64
-		    chromium-driver \ 
-		    # arm64 driver location \
+          chromium \ 
+          chromium-driver \ # download driver for arm64
+        # arm64 driver location \
         && mkdir -p /usr/lib/chromium-browser/ \ 
-		    && ln -s /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+        && ln -s /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
    
     - name: Install dependencies
       run: |
