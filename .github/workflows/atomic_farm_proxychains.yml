@@ -69,20 +69,25 @@ jobs:
     #    python-version: '3.11'
 
     - name: Install Chrome
-      run: |
-        sudo apt-get update --no-install-recommends -y 
-        sudo apt-get nstall --no-install-recommends -y google-chrome-stable
-        # Scarica l'ultima versione di ChromeDriver per ARM64
-        LATEST_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-        wget https://chromedriver.storage.googleapis.com/$LATEST_VERSION/chromedriver_linux64.zip
+      run: |      
+        sudo apt-get update -y
+        
+        wget -qO - https://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Testing/Release.key | sudo apt-key add -
+        echo "deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Testing/ /" | sudo tee /etc/apt/sources.list.d/ungoogled-chromium.list
+        sudo apt-get update -y
+        sudo apt-get install -y ungoogled-chromium
+        
+        # Scarica la versione corrispondente di ChromeDriver per ARM64
+        wget https://chromedriver.storage.googleapis.com/{version}/chromedriver_linux64.zip
         unzip chromedriver_linux64.zip
         rm chromedriver_linux64.zip
-
+        
         # Sposta il driver nella directory appropriata
         sudo mv chromedriver /usr/local/bin/chromedriver
-
+        
         # Assegna i permessi di esecuzione al driver
         sudo chmod +x /usr/local/bin/chromedriver
+
 
    
     - name: Install dependencies
