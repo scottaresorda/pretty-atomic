@@ -1,0 +1,181 @@
+name: atomic_farm_shr
+on:
+  workflow_dispatch:
+    inputs:
+      accounts_ondemand:
+        description: 'Enter the accounts, separated by commas'
+  #schedule:
+  #  - cron: '11 12 * * *'
+    #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
+
+jobs:
+  # define matrix for all executions
+  # ------------------------
+  DefineMatrix:
+    runs-on: self-hosted
+    outputs:
+      accounts: ${{ steps.get-accounts.outputs.IDs }}
+    steps:
+    #- name: Notify to Telegram
+    #  uses: appleboy/telegram-action@master
+    #  with:
+    #    to: ${{ secrets.TELEGRAM_USERID }}
+    #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
+    #    message: |
+    #      Job for account ${{ github.actor }} starting!
+    - name: Get Accounts
+      id: get-accounts
+      env:
+        accounts_ondemand: ${{ inputs.accounts_ondemand }}
+      run: |
+        if [ -z "$accounts_ondemand" ]; then
+          echo "The accounts input is empty."
+          echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          jq '[.[] | { the_id: .id }]' originalData.json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          rm -f originalData.json
+        else
+          array=($(echo "$accounts_ondemand" | tr ',' '\n'))
+          echo "array=$(echo ${array[@]})" >> $GITHUB_OUTPUT
+          json="["
+          for i in ${!array[@]}; do
+            json=$json"{\"the_id\":\""${array[i]}"\"},"
+          done
+          json=${json%,}
+          json=$json"]"
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          echo $json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+        fi
+  # ------------------------
+  # deploy a container for the job
+  wasabi:
+    name: Run container
+    runs-on: self-hosted
+    continue-on-error: true
+    needs:
+      - DefineMatrix
+    strategy:
+      #max-parallel: 3
+      matrix:
+        account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
+    steps:
+    - name: Set Secrets
+      id: sets-secrets
+      run: |
+        echo "$(date) | INFO  | Setup secrets ..."
+        echo ${{ matrix.account.the_id }}
+        echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
+        the_user=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .user' originalData.json)
+        the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
+        echo "::add-mask::$the_user"
+        echo "::add-mask::$the_pass"
+        
+        the_user=${the_user//\"/}
+        the_pass=${the_pass//\"/}
+
+        echo "secret-user=$the_user" >> $GITHUB_OUTPUT
+        echo "secret-pass=$the_pass" >> $GITHUB_OUTPUT
+
+
+        echo "$(date) | INFO  | Setup proxy ..."   
+        # Download the proxy list file
+        curl -o "proxy_list.txt" "${{ secrets.PROXY_LIST_URL }}"
+
+        # Initialize an empty array
+        proxy_list=()
+
+        # Read the content of the "proxy_list.txt" file line by line
+        while IFS= read -r line; do
+          # Append the current line to the "proxy_list" array
+          proxy_list+=("$line")
+        done < "proxy_list.txt"
+
+        # Calculate the number of elements in the proxy_list
+        num_proxy="${#proxy_list[@]}"
+
+        # Ensure that the number of elements in the proxy_list is greater than zero
+        if [[ num_proxy -gt 0 ]]; then
+          # Set the X variable as the account ID
+          X=${{ matrix.account.the_id }}
+
+          # Sort the proxy_list array based on the IP address field
+          sorted_proxy_list=($(printf '%s\n' "${proxy_list[@]}" | sort -t ':' -k1,1V))
+
+          ## Print the sorted proxy list
+          #for proxy in "${sorted_proxy_list[@]}"; do
+          #  echo "$proxy"
+          #done
+
+          # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
+          index=$((X % num_proxy))
+
+          # Extract the element from the sorted_proxy_list array based on the calculated index
+          proxy="${sorted_proxy_list[$index]}"
+
+          # Split the element based on colons (:)
+          IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
+
+          echo "::add-mask::$proxy_username"
+          echo "::add-mask::$proxy_password"          
+
+          proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
+          echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
+          echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
+          echo "proxy_username=$proxy_username" >> $GITHUB_OUTPUT
+          echo "proxy_password=$proxy_password_strip" >> $GITHUB_OUTPUT
+          
+          # Print the extracted values
+          echo "$(date) | INFO  | Proxy settings:"   
+          echo "IP: $proxy_host"
+          echo "Port: $proxy_port"
+          echo "User: $proxy_username"
+          echo "Password: $proxy_password_strip"
+
+        else
+          echo "The proxy list is empty."
+        fi
+    
+        rm -f originalData.json
+        unset the_user
+        unset the_pass
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.CONTAINER_USER }}
+        password: ${{ secrets.CONTAINER_PASS }}
+
+    - name: Run the Docker container
+      timeout-minutes: 30
+      run: |
+        #proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
+    
+        docker run \
+          --rm \
+          -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
+          -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
+          -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
+          -e DISCORD_URL ${{ secrets.DISCORD_URL }} \
+          -e ARGS="--headless --fast --dont-check-for-updates --dont-check-internet --error --no-webdriver-manager --on-finish 'exit' --no-images" \
+          -e http_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e https_proxy="http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e no_proxy="localhost,127.0.0.1" \
+        ghcr.io/furgonisangria/asterix:latest
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - wasabi
+    steps:
+    - name: Notify to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_USERID }}
+        token: ${{ secrets.TELEGRAM_API_TOKEN }}
+        message: |
+          Job for account ${{ github.actor }} was executed!
