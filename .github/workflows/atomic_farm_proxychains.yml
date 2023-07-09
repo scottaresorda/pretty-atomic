@@ -52,7 +52,7 @@ jobs:
   # deploy a container for the job
   wasabi:
     name: Run container
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     continue-on-error: true
     needs:
       - DefineMatrix
