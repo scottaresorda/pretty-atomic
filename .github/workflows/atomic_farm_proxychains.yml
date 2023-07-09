@@ -70,14 +70,20 @@ jobs:
 
     - name: Install Chrome
       run: |
-        set -ex \
-        && apt-get update --no-install-recommends -y \
-        && apt-get install --no-install-recommends -y  \
-          google-chrome-stable \ 
-          chromium-driver \ # download driver for arm64
-        # arm64 driver location \
-        && mkdir -p /usr/lib/chromium-browser/ \ 
-        && ln -s /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+        sudo apt-get update --no-install-recommends -y 
+        sudo apt-get nstall --no-install-recommends -y google-chrome-stable
+        # Scarica l'ultima versione di ChromeDriver per ARM64
+        LATEST_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
+        wget https://chromedriver.storage.googleapis.com/$LATEST_VERSION/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        rm chromedriver_linux64.zip
+
+        # Sposta il driver nella directory appropriata
+        sudo mv chromedriver /usr/local/bin/chromedriver
+
+        # Assegna i permessi di esecuzione al driver
+        sudo chmod +x /usr/local/bin/chromedriver
+
    
     - name: Install dependencies
       run: |
