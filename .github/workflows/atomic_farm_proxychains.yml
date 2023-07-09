@@ -61,12 +61,12 @@ jobs:
         account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
     steps:
     - uses: actions/checkout@v3
-      #with:
-      #  ref: 'farmgs'
-    #- name: Set up Python 3.11
-    #  uses: actions/setup-python@v4
-    #  with:
-    #    python-version: '3.11'
+
+    - name: Set Python alias
+      run: |
+        echo "alias python='python3'" >> ~/.bashrc
+        echo "alias pip='pip3'" >> ~/.bashrc
+        source ~/.bashrc
 
     - name: Install Chromium
       run: |      
