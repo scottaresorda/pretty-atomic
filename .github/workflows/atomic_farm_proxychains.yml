@@ -202,4 +202,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} - ${{ env.GITHUB_WORKFLOW }} was executed!
+          Job for account ${{ github.actor }} - atomic_farm_proxychains was executed!
