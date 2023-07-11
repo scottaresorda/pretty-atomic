@@ -75,7 +75,7 @@ jobs:
         apt-get install --no-install-recommends -y \
           chromium-bsu \
           chromium-driver \
-          tk-dev 
+          python3-tk
         rm -rf /var/lib/apt/lists/*
         # arm64 driver location
         mkdir -p /usr/lib/chromium-browser/
