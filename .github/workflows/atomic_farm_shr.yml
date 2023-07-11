@@ -69,8 +69,8 @@ jobs:
         echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
         the_user=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .user' originalData.json)
         the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
-        echo "::add-mask::$the_user"
-        echo "::add-mask::$the_pass"
+        #echo "::add-mask::$the_user"
+        #echo "::add-mask::$the_pass"
         
         the_user=${the_user//\"/}
         the_pass=${the_pass//\"/}
