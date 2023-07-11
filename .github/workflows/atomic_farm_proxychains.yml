@@ -70,17 +70,17 @@ jobs:
 
     - name: Install dependencies
       run: |
-        echo "$(date) | INFO  | Install dependencies ..."   
-        apt-get update --no-install-recommends -y
-        apt-get install --no-install-recommends -y \
-          chromium-bsu \
-          chromium-driver \
-          python3-tk
-        rm -rf /var/lib/apt/lists/*
-        # arm64 driver location
-        mkdir -p /usr/lib/chromium-browser/
-        ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
-
+        echo "$(date) | INFO  | Install dependencies ..."
+      #  apt-get update --no-install-recommends -y
+      #  apt-get install --no-install-recommends -y \
+      #    chromium-bsu \
+      #    chromium-driver \
+      #    python3-tk
+      #  rm -rf /var/lib/apt/lists/*
+      #  # arm64 driver location
+      #  mkdir -p /usr/lib/chromium-browser/
+      #  ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+        
         python3 -m pip install --upgrade pip
         pip install -r requirements.txt
 
