@@ -151,9 +151,9 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
-        apt install -y tk-dev python3-tk
+        #apt install -y tk-dev python3-tk
         #proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
-    
+        docker pull ghcr.io/furgonisangria/asterix:latest
         docker run \
           --rm \
           -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
