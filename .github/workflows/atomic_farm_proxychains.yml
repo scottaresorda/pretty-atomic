@@ -68,9 +68,8 @@ jobs:
     #    echo "alias pip='pip3'" >> ~/.bashrc
     #    source ~/.bashrc   
 
-    - name: Install dependencies
-      run: |
-        echo "$(date) | INFO  | Install dependencies ..."
+    #- name: Install chrome
+    #  run: |
       #  apt-get update --no-install-recommends -y
       #  apt-get install --no-install-recommends -y \
       #    chromium-bsu \
@@ -80,7 +79,10 @@ jobs:
       #  # arm64 driver location
       #  mkdir -p /usr/lib/chromium-browser/
       #  ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
-        
+
+    - name: Install dependencies
+      run: |
+        echo "$(date) | INFO  | Install dependencies ..." 
         python3 -m pip install --upgrade pip
         pip install -r requirements.txt
 
