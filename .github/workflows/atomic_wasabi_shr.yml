@@ -5,7 +5,7 @@ on:
       accounts_ondemand:
         description: 'Enter the accounts, separated by commas'
   schedule:
-    - cron: '11 12 * * *'
+    - cron: '11 32 * * *'
     #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
 
 jobs:
