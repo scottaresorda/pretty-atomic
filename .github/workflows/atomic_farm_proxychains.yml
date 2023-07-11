@@ -52,7 +52,7 @@ jobs:
   # deploy a container for the job
   wasabi:
     name: Run container
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     continue-on-error: true
     needs:
       - DefineMatrix
@@ -72,7 +72,7 @@ jobs:
       run: |      
         apt-get update --no-install-recommends -y
         apt-get install --no-install-recommends -y \
-          chromium-bsu \
+          chromium \
           chromium-driver
         rm -rf /var/lib/apt/lists/*
         # arm64 driver location
