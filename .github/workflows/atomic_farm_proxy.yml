@@ -22,7 +22,7 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} starting!
+          Job for account ${{ github.actor }} starting! - atomic_farm_proxy
     - name: Get Accounts
       id: get-accounts
       env:
@@ -172,4 +172,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} was executed!
+          Job for account ${{ github.actor }} was executed! - atomic_farm_proxy
