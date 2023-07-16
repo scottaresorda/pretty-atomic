@@ -149,7 +149,9 @@ jobs:
             local new_value=$2
             
             # Set or update the variable in the .env file
-            sed -i "s@^$variable_name=.*@$variable_name=$new_value@" "$env_file"
+            #sed -i "s@^$variable_name=.*@$variable_name=$new_value@" "$env_file"
+            awk -v var="$variable_name" -v val="$new_value" 'BEGIN{FS=OFS="="} $1==var {$2=val} 1' "$env_file" > "$env_file.tmp" && mv "$env_file.tmp" "$env_file"
+
 
         }
         
