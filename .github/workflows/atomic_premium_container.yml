@@ -62,8 +62,8 @@ jobs:
         account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
     steps:
     - uses: actions/checkout@v3
-      with:
-        path: .env
+      #with:
+      #  path: .env
 
     - name: Set Secrets
       id: sets-secrets
