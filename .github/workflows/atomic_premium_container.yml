@@ -149,14 +149,15 @@ jobs:
             local new_value=$2
             
             # Set or update the variable in the .env file
-            sed -i "s|^$variable_name=.*|$variable_name=$new_value|" "$env_file"        
+            sed -i "s@^$variable_name=.*@$variable_name=$new_value@" "$env_file"
+
         }
         
         # assigning or updating variables in the .env file.
         set_env_variable "LOGIN" "$the_user:$the_pass"
         set_env_variable "PRXIP" "$proxy_host"
         set_env_variable "PRXPORT" "$proxy_port"
-        set_env_variable "PRXUSER" "$proxy_user"
+        set_env_variable "PRXUSER" "$proxy_username"
         set_env_variable "PRXPASSWORD" "$proxy_password_strip"
         set_env_variable "URL" "https://login.live.com/login.srf?wa=wsignin1.0&rpsnv=13&ct=1668632814&rver=7.3.6960.0&wp=SA_20MIN&wreply=https%3A%2F%2Faccount.live.com%2FActivity%3Fmkt%3Dit-IT%26refd%3Daccount.microsoft.com%26refp%3Dsecurity%26uaid%3Dc438f05313904ae08e4a5efbaae0d6f3&lc=1033&id=38936&mkt=it-IT&uaid=c438f05313904ae08e4a5efbaae0d6f3"
         set_env_variable "APPRISE_ALERTS" "https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J"
