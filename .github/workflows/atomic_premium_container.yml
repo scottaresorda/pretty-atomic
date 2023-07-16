@@ -73,8 +73,8 @@ jobs:
         echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
         the_user=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .user' originalData.json)
         the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
-        echo "::add-mask::$the_user"
-        echo "::add-mask::$the_pass"
+        #echo "::add-mask::$the_user"
+        #echo "::add-mask::$the_pass"
         
         the_user=${the_user//\"/}
         the_pass=${the_pass//\"/}
@@ -121,8 +121,8 @@ jobs:
           # Split the element based on colons (:)
           IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
 
-          echo "::add-mask::$proxy_username"
-          echo "::add-mask::$proxy_password"          
+          #echo "::add-mask::$proxy_username"
+          #echo "::add-mask::$proxy_password"          
 
           proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
           echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
