@@ -180,7 +180,7 @@ jobs:
       timeout-minutes: 30
       run: |
         echo "$(cat .env)"
-        docker run --rm -it --env-file .env ghcr.io/furgonisangria/premium:latest
+        docker run --rm --env-file ghcr.io/furgonisangria/premium:latest
 
   notify:
     name: Notify
