@@ -177,7 +177,7 @@ jobs:
         password: ${{ secrets.CONTAINER_PASS }}
 
     - name: Run the Docker container
-      timeout-minutes: 30
+      timeout-minutes: 40
       run: |
         #echo "$(cat .env)"
         docker run --rm --env-file .env ghcr.io/furgonisangria/premium:latest
