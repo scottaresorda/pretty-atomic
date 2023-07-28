@@ -22,7 +22,7 @@ jobs:
     #    to: ${{ secrets.TELEGRAM_USERID }}
     #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
     #    message: |
-    #      Job for account ${{ github.actor }} - farm_shr starting!
+    #      Job for account ${{ github.actor }} - obelix_shr starting!
     - name: Get Accounts
       id: get-accounts
       env:
@@ -178,4 +178,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} - farm_shr was executed!
+          Job for account ${{ github.actor }} - obelix_shr was executed!
