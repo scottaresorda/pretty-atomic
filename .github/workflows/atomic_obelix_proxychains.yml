@@ -1,0 +1,194 @@
+name: atomic_obelix_proxychains
+on:
+  workflow_dispatch:
+    inputs:
+      accounts_ondemand:
+        description: 'Enter the accounts, separated by commas'
+  #schedule:
+  #  - cron: '11 8 * * *'
+    #- cron: '30 8,11 * * *' #Runs at 8:30 and 11:30 UTC everyday
+
+jobs:
+  # define matrix for all executions
+  # ------------------------
+  DefineMatrix:
+    runs-on: self-hosted
+    outputs:
+      accounts: ${{ steps.get-accounts.outputs.IDs }}
+    steps:
+    #- name: Notify to Telegram
+    #  uses: appleboy/telegram-action@master
+    #  with:
+    #    to: ${{ secrets.TELEGRAM_USERID }}
+    #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
+    #    message: |
+    #      Job for account ${{ github.actor }} - obelix_proxychains starting!
+    - name: Get Accounts
+      id: get-accounts
+      env:
+        accounts_ondemand: ${{ inputs.accounts_ondemand }}
+      run: |
+        if [ -z "$accounts_ondemand" ]; then
+          echo "The accounts input is empty."
+          echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          jq '[.[] | { the_id: .id }]' originalData.json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          rm -f originalData.json
+        else
+          array=($(echo "$accounts_ondemand" | tr ',' '\n'))
+          echo "array=$(echo ${array[@]})" >> $GITHUB_OUTPUT
+          json="["
+          for i in ${!array[@]}; do
+            json=$json"{\"the_id\":\""${array[i]}"\"},"
+          done
+          json=${json%,}
+          json=$json"]"
+          echo 'IDs<<EOF' >> $GITHUB_OUTPUT
+          echo $json >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+        fi
+  # ------------------------
+  # deploy a container for the job
+  wasabi:
+    name: Run container
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - DefineMatrix
+    strategy:
+      matrix:
+        account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'    
+    #- name: Set Python alias
+    #  run: |
+    #    echo "alias python='python3'" >> ~/.bashrc
+    #    echo "alias pip='pip3'" >> ~/.bashrc
+    #    source ~/.bashrc   
+
+    #- name: Install chrome
+    #  run: |
+      #  apt-get update --no-install-recommends -y
+      #  apt-get install --no-install-recommends -y \
+      #    chromium-bsu \
+      #    chromium-driver \
+      #    python3-tk
+      #  rm -rf /var/lib/apt/lists/*
+      #  # arm64 driver location
+      #  mkdir -p /usr/lib/chromium-browser/
+      #  ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+
+    - name: Install dependencies
+      run: |
+        echo "$(date) | INFO  | Install dependencies ..." 
+        python3 -m pip install --upgrade pip
+        pip install -r obelix/BingRewards/requirements.txt
+
+        # Install proxychains
+        git clone https://github.com/rofl0r/proxychains
+        cd proxychains
+        git checkout v4.16
+        ./configure
+        make
+        sudo make install
+        cd ..
+
+    - name: Set Secrets
+      id: sets-secrets
+      run: |
+        echo ${{ matrix.account.the_id }}
+        echo $(echo ${{ secrets.MATRIX }} | base64 --decode) > originalData.json
+        the_user=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .user' originalData.json)
+        the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
+        echo "::add-mask::$the_user"
+        echo "::add-mask::$the_pass"
+        echo '[{ "username": '$the_user', "password": '$the_pass' }]' > accounts.json
+
+        echo "$(date) | INFO  | Setup proxy"   
+        # Download the proxy list file
+        curl -o "proxy_list.txt" "${{ secrets.PROXY_LIST_URL }}"
+
+        # Initialize an empty array
+        proxy_list=()
+
+        # Read the content of the "proxy_list.txt" file line by line
+        while IFS= read -r line; do
+          # Append the current line to the "proxy_list" array
+          proxy_list+=("$line")
+        done < "proxy_list.txt"
+
+        # Calculate the number of elements in the proxy_list
+        num_proxy="${#proxy_list[@]}"
+
+        # Ensure that the number of elements in the proxy_list is greater than zero
+        if [[ num_proxy -gt 0 ]]; then
+          # Set the X variable as the account ID
+          X=${{ matrix.account.the_id }}
+
+          # Sort the proxy_list array based on the IP address field
+          sorted_proxy_list=($(printf '%s\n' "${proxy_list[@]}" | sort -t ':' -k1,1V))
+
+          ## Print the sorted proxy list
+          #for proxy in "${sorted_proxy_list[@]}"; do
+          #  echo "$proxy"
+          #done
+
+          # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
+          index=$((X % num_proxy))
+
+          # Extract the element from the sorted_proxy_list array based on the calculated index
+          proxy="${sorted_proxy_list[$index]}"
+
+          # Split the element based on colons (:)
+          IFS=":" read -r ip port user password <<< "$proxy"
+          echo "::add-mask::$user"
+          echo "::add-mask::$password"
+
+          # Print the extracted values
+          echo "$(date) | INFO  | Proxy settings:"   
+          echo "IP: $ip"
+          echo "Port: $port"
+          echo "User: $user"
+          echo "Password: $password"
+
+          echo "http $ip $port $user $password" >> proxychains.conf
+          #cat proxychains.conf
+
+        else
+          echo "The proxy list is empty."
+        fi
+
+        rm -f originalData.json
+        unset the_user
+        unset the_pass
+
+    - name: Run script
+      timeout-minutes: 30
+      run: |
+        echo "$(date) | INFO  | Configuring wasabi..."   
+        #echo $(echo ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} | base64 --decode) > google_sheets_credentials.json
+        #echo $(echo ${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} | base64 --decode) > google_sheets_token.json
+        echo "$(date) | INFO  | Starting wasabi"      
+        proxychains4 -f proxychains.conf obelix/BingRewards/python3 main.py \
+          --visible \
+          --lang it \
+          --geo IT
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs:
+      - wasabi
+    steps:
+    - name: Notify to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_USERID }}
+        token: ${{ secrets.TELEGRAM_API_TOKEN }}
+        message: |
+          Job for account ${{ github.actor }} - obelix_proxychains was executed!
