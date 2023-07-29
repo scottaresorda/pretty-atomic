@@ -174,7 +174,7 @@ jobs:
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} | base64 --decode) > google_sheets_credentials.json
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} | base64 --decode) > google_sheets_token.json
         echo "$(date) | INFO  | Starting wasabi"      
-        proxychains4 -f proxychains.conf obelix/BingRewards/python3 main.py \
+        proxychains4 -f proxychains.conf python3 obelix/BingRewards/main.py \
           --visible \
           --lang it \
           --geo IT
