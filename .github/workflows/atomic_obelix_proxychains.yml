@@ -107,7 +107,7 @@ jobs:
         the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
         echo "::add-mask::$the_user"
         echo "::add-mask::$the_pass"
-        echo '[{ "username": '$the_user', "password": '$the_pass' }]' > accounts.json
+        echo '[{ "username": '$the_user', "password": '$the_pass' }]' > obelix/BingRewards/accounts.json
 
         echo "$(date) | INFO  | Setup proxy"   
         # Download the proxy list file
