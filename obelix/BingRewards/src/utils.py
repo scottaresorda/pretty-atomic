@@ -1,7 +1,9 @@
 import contextlib
+import locale as pylocale
 import time
 import urllib.parse
 
+import requests
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -11,16 +13,17 @@ from .constants import BASE_URL
 
 
 class Utils:
-    def __init__(self, browser: WebDriver):
-        self.browser = browser
+    def __init__(self, webdriver: WebDriver):
+        self.webdriver = webdriver
+        pylocale.setlocale(pylocale.LC_NUMERIC, pylocale.getdefaultlocale()[0])
 
     def waitUntilVisible(self, by: str, selector: str, timeToWait: float = 10):
-        WebDriverWait(self.browser, timeToWait).until(
+        WebDriverWait(self.webdriver, timeToWait).until(
             ec.visibility_of_element_located((by, selector))
         )
 
     def waitUntilClickable(self, by: str, selector: str, timeToWait: float = 10):
-        WebDriverWait(self.browser, timeToWait).until(
+        WebDriverWait(self.webdriver, timeToWait).until(
             ec.element_to_be_clickable((by, selector))
         )
 
@@ -35,14 +38,14 @@ class Utils:
         refreshCount = 0
         while True:
             try:
-                self.browser.find_element(by, selector)
+                self.webdriver.find_element(by, selector)
                 return True
             except Exception:  # pylint: disable=broad-except
                 if tries < checks:
                     tries += 1
                     time.sleep(checkingInterval)
                 elif refreshCount < refreshsAllowed:
-                    self.browser.refresh()
+                    self.webdriver.refresh()
                     refreshCount += 1
                     tries = 0
                     time.sleep(5)
@@ -57,31 +60,36 @@ class Utils:
 
     def resetTabs(self):
         try:
-            curr = self.browser.current_window_handle
+            curr = self.webdriver.current_window_handle
 
-            for handle in self.browser.window_handles:
+            for handle in self.webdriver.window_handles:
                 if handle != curr:
-                    self.browser.switch_to.window(handle)
+                    self.webdriver.switch_to.window(handle)
                     time.sleep(0.5)
-                    self.browser.close()
+                    self.webdriver.close()
                     time.sleep(0.5)
 
-            self.browser.switch_to.window(curr)
+            self.webdriver.switch_to.window(curr)
             time.sleep(0.5)
             self.goHome()
         except Exception:  # pylint: disable=broad-except
             self.goHome()
 
     def goHome(self):
-        currentUrl = urllib.parse.urlparse(self.browser.current_url)
         targetUrl = urllib.parse.urlparse(BASE_URL)
-        if (
-            currentUrl.hostname != targetUrl.hostname
-            or currentUrl.path != targetUrl.path
-        ):
-            self.browser.get(BASE_URL)
-            self.waitUntilVisible(By.ID, "daily-sets", 10)
-        self.tryDismissCookieBanner()
+        self.webdriver.get(BASE_URL)
+        while True:
+            self.tryDismissCookieBanner()
+            with contextlib.suppress(Exception):
+                self.webdriver.find_element(By.ID, "more-activities")
+                break
+            currentUrl = urllib.parse.urlparse(self.webdriver.current_url)
+            if (
+                currentUrl.hostname != targetUrl.hostname
+            ) and self.tryDismissAllMessages():
+                time.sleep(1)
+                self.webdriver.get(BASE_URL)
+            time.sleep(1)
 
     def getAnswerCode(self, key: str, string: str) -> str:
         t = sum(ord(string[i]) for i in range(len(string)))
@@ -89,10 +97,36 @@ class Utils:
         return str(t)
 
     def getDashboardData(self) -> dict:
-        return self.browser.execute_script("return dashboard")
+        return self.webdriver.execute_script("return dashboard")
+
+    def getBingInfo(self):
+        cookieJar = self.webdriver.get_cookies()
+        cookies = {cookie["name"]: cookie["value"] for cookie in cookieJar}
+        response = requests.get(
+            "https://www.bing.com/rewards/panelflyout/getuserinfo", cookies=cookies
+        )
+        if response.status_code == requests.codes.ok:
+            data = response.json()
+            return data
+        else:
+            return None
+
+    def checkBingLogin(self):
+        data = self.getBingInfo()
+        if data:
+            return data["userInfo"]["isRewardsUser"]
+        else:
+            return False
 
     def getAccountPoints(self) -> int:
         return self.getDashboardData()["userStatus"]["availablePoints"]
+
+    def getBingAccountPoints(self) -> int:
+        data = self.getBingInfo()
+        if data:
+            return data["userInfo"]["balance"]
+        else:
+            return 0
 
     def tryDismissAllMessages(self):
         buttons = [
@@ -106,7 +140,7 @@ class Utils:
         result = False
         for button in buttons:
             try:
-                self.browser.find_element(button[0], button[1]).click()
+                self.webdriver.find_element(button[0], button[1]).click()
                 result = True
             except Exception:  # pylint: disable=broad-except
                 continue
@@ -114,26 +148,26 @@ class Utils:
 
     def tryDismissCookieBanner(self):
         with contextlib.suppress(Exception):
-            self.browser.find_element(By.ID, "cookie-banner").find_element(
+            self.webdriver.find_element(By.ID, "cookie-banner").find_element(
                 By.TAG_NAME, "button"
             ).click()
             time.sleep(2)
 
     def tryDismissBingCookieBanner(self):
         with contextlib.suppress(Exception):
-            self.browser.find_element(By.ID, "bnp_btn_accept").click()
+            self.webdriver.find_element(By.ID, "bnp_btn_accept").click()
             time.sleep(2)
 
     def switchToNewTab(self, timeToWait: int = 0):
         time.sleep(0.5)
-        self.browser.switch_to.window(window_name=self.browser.window_handles[1])
+        self.webdriver.switch_to.window(window_name=self.webdriver.window_handles[1])
         if timeToWait > 0:
             time.sleep(timeToWait)
 
     def closeCurrentTab(self):
-        self.browser.close()
+        self.webdriver.close()
         time.sleep(0.5)
-        self.browser.switch_to.window(window_name=self.browser.window_handles[0])
+        self.webdriver.switch_to.window(window_name=self.webdriver.window_handles[0])
         time.sleep(0.5)
 
     def visitNewTab(self, timeToWait: int = 0):
@@ -154,7 +188,7 @@ class Utils:
             counters["pcSearch"][0]["pointProgressMax"]
             + counters["pcSearch"][1]["pointProgressMax"]
         )
-        if targetDesktop == 33 or targetDesktop == 102:
+        if targetDesktop in [33, 102]:
             # Level 1 or 2 EU
             searchPoints = 3
         elif targetDesktop == 55 or targetDesktop >= 170:
@@ -167,3 +201,24 @@ class Utils:
             targetMobile = counters["mobileSearch"][0]["pointProgressMax"]
             remainingMobile = int((targetMobile - progressMobile) / searchPoints)
         return remainingDesktop, remainingMobile
+
+    def formatNumber(self, number, num_decimals=2):
+        return pylocale.format_string(
+            f"%10.{num_decimals}f", number, grouping=True
+        ).strip()
+
+
+def prRed(prt):
+    print(f"\033[91m{prt}\033[00m")
+
+
+def prGreen(prt):
+    print(f"\033[92m{prt}\033[00m")
+
+
+def prPurple(prt):
+    print(f"\033[95m{prt}\033[00m")
+
+
+def prYellow(prt):
+    print(f"\033[93m{prt}\033[00m")
