@@ -180,7 +180,8 @@ jobs:
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} | base64 --decode) > google_sheets_credentials.json
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} | base64 --decode) > google_sheets_token.json
         echo "$(date) | INFO  | Starting wasabi"      
-        python obelix/BingRewards/main.py \
+        cd obelix/BingRewards/
+        python main.py \
           --lang it \
           --geo IT \
           --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}
