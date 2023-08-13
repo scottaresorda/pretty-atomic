@@ -130,14 +130,17 @@ jobs:
           # Print the extracted values
           echo "$(date) | INFO  | Proxy settings:"   
           proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
-          echo "proxy_host=$proxy_host"
-          echo "proxy_port=$proxy_port"
-          echo "proxy_username=$proxy_username"
-          echo "proxy_password=$proxy_password_strip"
-          the_proxy="http://$proxy_username:$proxy_password_strip@$proxy_host:$proxy_port"
 
-          echo '[{ "username": '$the_user', "password": '$the_pass', "proxy": '$the_proxy' }]' > obelix/BingRewards/accounts.json
+          json_data='[
+            {
+              "username": "'$the_user'",
+              "password": "'$the_pass'",
+              "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
+            }
+          ]'
+          echo "$json_data" > obelix/BingRewards/accounts.json
           cat obelix/BingRewards/accounts.json
+          
         else
           echo "The proxy list is empty."
         fi
