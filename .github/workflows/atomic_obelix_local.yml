@@ -135,16 +135,22 @@ jobs:
           echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
           echo "proxy_username=$proxy_username" >> $GITHUB_OUTPUT
           echo "proxy_password=$proxy_password_strip" >> $GITHUB_OUTPUT
-          
+
+          #json_data='[
+          #  {
+          #    "username": "'$the_user'",
+          #    "password": "'$the_pass'",
+          #    "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
+          #  }
+          #]'
           json_data='[
             {
               "username": "'$the_user'",
-              "password": "'$the_pass'",
-              "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
+              "password": "'$the_pass'"
             }
           ]'
-          #echo "$json_data" > obelix/BingRewards/accounts.json
-          #cat obelix/BingRewards/accounts.json
+          echo "$json_data" > obelix/BingRewards/accounts.json
+          cat obelix/BingRewards/accounts.json
           
         else
           echo "The proxy list is empty."
@@ -163,7 +169,8 @@ jobs:
         echo "$(date) | INFO  | Starting wasabi"      
         python obelix/BingRewards/main.py \
           --lang it \
-          --geo IT
+          --geo IT \
+          --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}"
   notify:
     name: Notify
     runs-on: ubuntu-latest
