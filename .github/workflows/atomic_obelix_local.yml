@@ -22,7 +22,7 @@ jobs:
     #    to: ${{ secrets.TELEGRAM_USERID }}
     #    token: ${{ secrets.TELEGRAM_API_TOKEN }}
     #    message: |
-    #      Job for account ${{ github.actor }} - obelix_proxychains starting!
+    #      Job for account ${{ github.actor }} - obelix_local starting!
     - name: Get Accounts
       id: get-accounts
       env:
@@ -136,8 +136,8 @@ jobs:
 
           # Split the element based on colons (:)
           IFS=":" read -r ip port user password <<< "$proxy"
-          echo "::add-mask::$user"
-          echo "::add-mask::$password"
+          #echo "::add-mask::$user"
+          #echo "::add-mask::$password"
 
           # Print the extracted values
           echo "$(date) | INFO  | Proxy settings:"   
@@ -146,7 +146,7 @@ jobs:
           echo "User: $user"
           echo "Password: $password"
           the_proxy="http://$user:$password@ip:@port"
-          echo '[{ "username": '$the_user', "password": '$the_pass', "proxy": 'the_proxy' }]' > obelix/BingRewards/accounts.json
+          echo '[{ "username": '$the_user', "password": '$the_pass', "proxy": '$the_proxy' }]' > obelix/BingRewards/accounts.json
           cat obelix/BingRewards/accounts.json
         else
           echo "The proxy list is empty."
@@ -180,4 +180,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_USERID }}
         token: ${{ secrets.TELEGRAM_API_TOKEN }}
         message: |
-          Job for account ${{ github.actor }} - obelix_proxychains was executed!
+          Job for account ${{ github.actor }} - obelix_local was executed!
