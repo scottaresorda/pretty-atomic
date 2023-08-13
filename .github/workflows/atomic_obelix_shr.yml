@@ -153,20 +153,18 @@ jobs:
     - name: Run the Docker container
       timeout-minutes: 30
       run: |
-        #proxy_password=$(echo "${{ steps.sets-secrets.outputs.proxy_password }}" | tr -d '[:space:]')
         docker pull ghcr.io/furgonisangria/obelix:latest
         docker run \
           --rm \
           -e GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }} \
           -e USER=${{ steps.sets-secrets.outputs.secret-user }} \
           -e PASS=${{ steps.sets-secrets.outputs.secret-pass }} \
-          -e ARGS="--visible --lang it --geo IT --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
+          -e ARGS="--lang it --geo IT --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}" \
         ghcr.io/furgonisangria/obelix:latest
 
   notify:
     name: Notify
-    runs-on: self-hosted
-    #runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     continue-on-error: true
     needs:
       - wasabi
