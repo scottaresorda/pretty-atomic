@@ -86,7 +86,8 @@ jobs:
         the_pass=$(jq '.[] | select(.id=="${{ matrix.account.the_id }}") | .pass' originalData.json)
         echo "::add-mask::$the_user"
         echo "::add-mask::$the_pass"
-
+        echo '[{ "username": '$the_user', "password": '$the_pass' }]' > obelix/BingRewards/accounts.json
+        
         echo "$(date) | INFO  | Setup proxy"   
         # Download the proxy list file
         curl -o "proxy_list.txt" "${{ secrets.PROXY_LIST_URL }}"
@@ -143,13 +144,13 @@ jobs:
           #    "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
           #  }
           #]'
-          json_data='[
-            {
-              "username": "'$the_user'",
-              "password": "'$the_pass'"
-            }
-          ]'
-          echo "$json_data" > obelix/BingRewards/accounts.json
+          #json_data='[
+          #  {
+          #    "username": "'$the_user'",
+          #    "password": "'$the_pass'"
+          #  }
+          #]'
+          #echo "$json_data" > obelix/BingRewards/accounts.json
           cat obelix/BingRewards/accounts.json
           #touch obelix/BingRewards/logs/activity.log
 
