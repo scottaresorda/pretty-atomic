@@ -52,8 +52,8 @@ jobs:
   # deploy a container for the job
   wasabi:
     name: Run container
-    #runs-on: self-hosted
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    #runs-on: ubuntu-latest
 
     continue-on-error: true
     needs:
@@ -165,7 +165,8 @@ jobs:
 
   notify:
     name: Notify
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    #runs-on: ubuntu-latest
     continue-on-error: true
     needs:
       - wasabi
