@@ -152,6 +152,18 @@ jobs:
           echo "$json_data" > obelix/BingRewards/accounts.json
           cat obelix/BingRewards/accounts.json
           #touch obelix/BingRewards/logs/activity.log
+
+          logs_directory="/home/runner/work/pretty-atomic/pretty-atomic/logs"
+          log_file="activity.log"
+          
+          # Verifica se la directory dei log non esiste
+          if [ ! -d "$logs_directory" ]; then
+              mkdir -p "$logs_directory"
+          fi
+          
+          # Crea il file di log
+          touch "$logs_directory/$log_file"
+
           
         else
           echo "The proxy list is empty."
