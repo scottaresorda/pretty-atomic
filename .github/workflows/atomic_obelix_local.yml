@@ -151,6 +151,7 @@ jobs:
           ]'
           echo "$json_data" > obelix/BingRewards/accounts.json
           cat obelix/BingRewards/accounts.json
+          touch obelix/BingRewards/logs/activity.log
           
         else
           echo "The proxy list is empty."
