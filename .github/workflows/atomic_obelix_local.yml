@@ -69,24 +69,12 @@ jobs:
     #  run: |
     #    echo "alias python='python3'" >> ~/.bashrc
     #    echo "alias pip='pip3'" >> ~/.bashrc
-    #    source ~/.bashrc   
-
-    #- name: Install chrome
-    #  run: |
-      #  apt-get update --no-install-recommends -y
-      #  apt-get install --no-install-recommends -y \
-      #    chromium-bsu \
-      #    chromium-driver \
-      #    python3-tk
-      #  rm -rf /var/lib/apt/lists/*
-      #  # arm64 driver location
-      #  mkdir -p /usr/lib/chromium-browser/
-      #  ln -sfn /usr/bin/chromedriver /usr/lib/chromium-browser/chromedriver
+    #    source ~/.bashrc
 
     - name: Install dependencies
       run: |
         echo "$(date) | INFO  | Install dependencies ..." 
-        python3 -m pip install --upgrade pip
+        python -m pip install --upgrade pip
         pip install -r obelix/BingRewards/requirements.txt
 
     - name: Set Secrets
@@ -165,8 +153,7 @@ jobs:
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_B64 }} | base64 --decode) > google_sheets_credentials.json
         #echo $(echo ${{ secrets.GOOGLE_SHEETS_TOKEN_B64 }} | base64 --decode) > google_sheets_token.json
         echo "$(date) | INFO  | Starting wasabi"      
-        python3 obelix/BingRewards/main.py \
-          --visible \
+        python obelix/BingRewards/main.py \
           --lang it \
           --geo IT
   notify:
