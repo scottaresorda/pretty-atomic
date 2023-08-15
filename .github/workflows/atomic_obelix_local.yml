@@ -185,7 +185,8 @@ jobs:
         python main.py \
           --lang it \
           --geo IT \
-          --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }}
+          --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
+          --discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
   notify:
     name: Notify
     runs-on: ubuntu-latest
