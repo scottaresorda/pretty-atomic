@@ -181,7 +181,8 @@ jobs:
           --lang it \
           --geo IT \
           --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
-          --discord https://logparser2gs.azurewebsites.net/api/HttpTrigger1?code=7aqJ_lR4Xn7ZIbL-CrNwyjxHrkK37u91eO210vLFoaOiAzFuIy-gKw==
+          --discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
+          #--discord https://logparser2gs.azurewebsites.net/api/HttpTrigger1?code=7aqJ_lR4Xn7ZIbL-CrNwyjxHrkK37u91eO210vLFoaOiAzFuIy-gKw==
   notify:
     name: Notify
     runs-on: ubuntu-latest
