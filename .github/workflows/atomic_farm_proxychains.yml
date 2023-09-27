@@ -109,22 +109,25 @@ jobs:
         echo "::add-mask::$the_pass"
         echo '[{ "username": '$the_user', "password": '$the_pass' }]' > accounts.json
 
-        echo "$(date) | INFO  | Setup proxy"   
+        echo "$(date) | INFO  | Setup proxy"
+        
         # Download the proxy list file
         curl -o "proxy_list.txt" "${{ secrets.PROXY_LIST_URL }}"
-
+        
         # Initialize an empty array
         proxy_list=()
-
+        
         # Read the content of the "proxy_list.txt" file line by line
         while IFS= read -r line; do
           # Append the current line to the "proxy_list" array
           proxy_list+=("$line")
         done < "proxy_list.txt"
-
+        
         # Calculate the number of elements in the proxy_list
         num_proxy="${#proxy_list[@]}"
-
+        # Initialize a variable to keep track of the number of loops executed
+        loop_count=0
+        
         # Ensure that the number of elements in the proxy_list is greater than zero
         if [[ num_proxy -gt 0 ]]; then
           # Set the X variable as the account ID
@@ -135,6 +138,9 @@ jobs:
         
           # Loop until an Italian proxy is found
           while true; do
+            # Increment the loop count
+            loop_count=$((loop_count + 1))
+        
             # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
             index=$((X % num_proxy))
         
@@ -163,15 +169,10 @@ jobs:
               break  # Exit the loop if the country is Italy
             else
               X=$((X + 1))  # Increment X if the country is not Italy and try the next proxy
-              # Send a message to Telegram if the country is not Italy
-              to="${{ secrets.TELEGRAM_USERID }}"
-              token="${{ secrets.TELEGRAM_API_TOKEN }}"
-              message="Proxy with IP: $ip is not in Italy (Country: $country)"
-              curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$to" -d "text=$message"
             fi
         
-            # Check if all proxies have been tried
-            if [[ "$X" -ge "$num_proxy" ]]; then
+            # Check if the number of loops executed is greater than or equal to the number of proxies
+            if [[ "$loop_count" -ge "$num_proxy" ]]; then
               echo "All proxies are non-Italian. Exiting."
               exit 1
             fi
