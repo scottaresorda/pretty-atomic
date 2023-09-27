@@ -83,84 +83,100 @@ jobs:
         echo "::add-mask::$the_pass"
         echo '[{ "username": '$the_user', "password": '$the_pass' }]' > obelix/BingRewards/accounts.json
         
+
         echo "$(date) | INFO  | Setup proxy"   
         # Download the proxy list file
         curl -o "proxy_list.txt" "${{ secrets.PROXY_LIST_URL }}"
-
+        
         # Initialize an empty array
         proxy_list=()
-
+        
         # Read the content of the "proxy_list.txt" file line by line
         while IFS= read -r line; do
           # Append the current line to the "proxy_list" array
           proxy_list+=("$line")
         done < "proxy_list.txt"
-
+        
         # Calculate the number of elements in the proxy_list
         num_proxy="${#proxy_list[@]}"
-
+        
         # Ensure that the number of elements in the proxy_list is greater than zero
         if [[ num_proxy -gt 0 ]]; then
           # Set the X variable as the account ID
           X=${{ matrix.account.the_id }}
-
+        
           # Sort the proxy_list array based on the IP address field
           sorted_proxy_list=($(printf '%s\n' "${proxy_list[@]}" | sort -t ':' -k1,1V))
-
           ## Print the sorted proxy list
           #for proxy in "${sorted_proxy_list[@]}"; do
           #  echo "$proxy"
           #done
+        
+          # Loop until an Italian proxy is found
+          while true; do
+            # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
+            index=$((X % num_proxy))
+        
+            # Extract the element from the sorted_proxy_list array based on the calculated index
+            proxy="${sorted_proxy_list[$index]}"
+        
+            # Split the element based on colons (:)
+            IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
+            #echo "::add-mask::$proxy_username"
+            #echo "::add-mask::$proxy_password"
+        
+            # Print the extracted values
+            echo "$(date) | INFO  | Proxy settings:"   
+            proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
+        
+            echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
+            echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
+            echo "proxy_username=$proxy_username" >> $GITHUB_OUTPUT
+            echo "proxy_password=$proxy_password_strip" >> $GITHUB_OUTPUT
 
-          # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
-          index=$((X % num_proxy))
+            #json_data='[
+            #  {
+            #    "username": "'$the_user'",
+            #    "password": "'$the_pass'",
+            #    "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
+            #  }
+            #]'
+            #json_data='[
+            #  {
+            #    "username": "'$the_user'",
+            #    "password": "'$the_pass'"
+            #  }
+            #]'
+            #echo "$json_data" > obelix/BingRewards/accounts.json
 
-          # Extract the element from the sorted_proxy_list array based on the calculated index
-          proxy="${sorted_proxy_list[$index]}"
-
-          # Split the element based on colons (:)
-          IFS=":" read -r proxy_host proxy_port proxy_username proxy_password <<< "$proxy"
-          #echo "::add-mask::$proxy_username"
-          #echo "::add-mask::$proxy_password"
-
-          # Print the extracted values
-          echo "$(date) | INFO  | Proxy settings:"   
-          proxy_password_strip=$(echo "$proxy_password" | tr -d '[:space:]')
-
-          echo "proxy_host=$proxy_host" >> $GITHUB_OUTPUT
-          echo "proxy_port=$proxy_port" >> $GITHUB_OUTPUT
-          echo "proxy_username=$proxy_username" >> $GITHUB_OUTPUT
-          echo "proxy_password=$proxy_password_strip" >> $GITHUB_OUTPUT
-
-          #json_data='[
-          #  {
-          #    "username": "'$the_user'",
-          #    "password": "'$the_pass'",
-          #    "proxy": "http://'$proxy_username':'$proxy_password_strip'@'$proxy_host':'$proxy_port'"
-          #  }
-          #]'
-          #json_data='[
-          #  {
-          #    "username": "'$the_user'",
-          #    "password": "'$the_pass'"
-          #  }
-          #]'
-          #echo "$json_data" > obelix/BingRewards/accounts.json
-          cat obelix/BingRewards/accounts.json
-          #touch obelix/BingRewards/logs/activity.log
-
-          logs_directory="/home/runner/work/pretty-atomic/pretty-atomic/logs"
-          log_file="activity.log"
-          
-          # Verifica se la directory dei log non esiste
-          if [ ! -d "$logs_directory" ]; then
-              mkdir -p "$logs_directory"
-          fi
-          
-          # Crea il file di log
-          touch "$logs_directory/$log_file"
-
-          
+            # Make a curl request to ifconfig.co/country using the proxy
+            country=$(curl -s --proxy "$proxy_host:$proxy_port" --proxy-user "$proxy_username:$proxy_password_strip" ifconfig.co/country)
+        
+            # Check if the country is Italy
+            if [[ "$country" == "Italy" ]]; then
+              echo "Country: $country"
+              echo "Loop count: $loop_count"
+              break  # Exit the loop if the country is Italy
+            else
+              echo "Country: $country"
+              echo "Loop count: $loop_count"
+              X=$((X + 1))  # Increment X if the country is not Italy and try the next proxy
+              # Send a message to Telegram if the country is not Italy
+              to="${{ secrets.TELEGRAM_USERID }}"
+              token="${{ secrets.TELEGRAM_API_TOKEN }}"
+              message="Proxy with IP: $proxy_host is not in Italy (Country: $country)"
+              curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$to" -d "text=$message"
+            fi
+        
+            # Increment the loop count
+            loop_count=$((loop_count + 1))
+            
+            # Check if the number of loops executed is greater than or equal to the number of proxies
+            if [[ "$loop_count" -ge "$num_proxy" ]]; then
+              echo "All proxies are non-Italian. Exiting."
+              exit 1
+            fi
+          done
         else
           echo "The proxy list is empty."
         fi
@@ -181,8 +197,8 @@ jobs:
           --lang it \
           --geo IT \
           --proxy http://${{ steps.sets-secrets.outputs.proxy_username }}:${{ steps.sets-secrets.outputs.proxy_password }}@${{ steps.sets-secrets.outputs.proxy_host }}:${{ steps.sets-secrets.outputs.proxy_port }} \
-          --discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
-          #--discord https://logparser2gs.azurewebsites.net/api/HttpTrigger1?code=7aqJ_lR4Xn7ZIbL-CrNwyjxHrkK37u91eO210vLFoaOiAzFuIy-gKw==
+          --discord https://logparser2gs.azurewebsites.net/api/HttpTrigger1?code=7aqJ_lR4Xn7ZIbL-CrNwyjxHrkK37u91eO210vLFoaOiAzFuIy-gKw==
+          #--discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
   notify:
     name: Notify
     runs-on: ubuntu-latest
