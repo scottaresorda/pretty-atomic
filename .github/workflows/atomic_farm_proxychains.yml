@@ -129,36 +129,53 @@ jobs:
         if [[ num_proxy -gt 0 ]]; then
           # Set the X variable as the account ID
           X=${{ matrix.account.the_id }}
-
+        
           # Sort the proxy_list array based on the IP address field
           sorted_proxy_list=($(printf '%s\n' "${proxy_list[@]}" | sort -t ':' -k1,1V))
-
-          ## Print the sorted proxy list
-          #for proxy in "${sorted_proxy_list[@]}"; do
-          #  echo "$proxy"
-          #done
-
-          # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
-          index=$((X % num_proxy))
-
-          # Extract the element from the sorted_proxy_list array based on the calculated index
-          proxy="${sorted_proxy_list[$index]}"
-
-          # Split the element based on colons (:)
-          IFS=":" read -r ip port user password <<< "$proxy"
-          echo "::add-mask::$user"
-          echo "::add-mask::$password"
-
-          # Print the extracted values
-          echo "$(date) | INFO  | Proxy settings:"   
-          echo "IP: $ip"
-          echo "Port: $port"
-          echo "User: $user"
-          echo "Password: $password"
-
-          echo "http $ip $port $user $password" >> proxychains.conf
-          #cat proxychains.conf
-
+        
+          # Loop until an Italian proxy is found
+          while true; do
+            # Calculate the modulo of X with respect to the number of elements in sorted_proxy_list
+            index=$((X % num_proxy))
+        
+            # Extract the element from the sorted_proxy_list array based on the calculated index
+            proxy="${sorted_proxy_list[$index]}"
+        
+            # Split the element based on colons (:)
+            IFS=":" read -r ip port user password <<< "$proxy"
+            echo "::add-mask::$user"
+            echo "::add-mask::$password"
+        
+            # Print the extracted values
+            echo "$(date) | INFO  | Proxy settings:"   
+            echo "IP: $ip"
+            echo "Port: $port"
+            echo "User: $user"
+            echo "Password: $password"
+        
+            # Make a curl request to ifconfig.co/country using the proxy
+            country=$(curl -s --proxy "$ip:$port" --proxy-user "$user:$password" ifconfig.co/country)
+        
+            # Check if the country is Italy
+            if [[ "$country" == "Italy" ]]; then
+              echo "Country: $country"
+              echo "http $ip $port $user $password" >> proxychains.conf
+              break  # Exit the loop if the country is Italy
+            else
+              X=$((X + 1))  # Increment X if the country is not Italy and try the next proxy
+              # Send a message to Telegram if the country is not Italy
+              to="${{ secrets.TELEGRAM_USERID }}"
+              token="${{ secrets.TELEGRAM_API_TOKEN }}"
+              message="Proxy with IP: $ip is not in Italy (Country: $country)"
+              curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$to" -d "text=$message"
+            fi
+        
+            # Check if all proxies have been tried
+            if [[ "$X" -ge "$num_proxy" ]]; then
+              echo "All proxies are non-Italian. Exiting."
+              exit 1
+            fi
+          done
         else
           echo "The proxy list is empty."
         fi
