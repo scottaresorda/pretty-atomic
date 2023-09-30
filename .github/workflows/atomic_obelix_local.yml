@@ -162,10 +162,10 @@ jobs:
               echo "Loop count: $loop_count"
               X=$((X + 1))  # Increment X if the country is not Italy and try the next proxy
               # Send a message to Telegram if the country is not Italy
-              to="${{ secrets.TELEGRAM_USERID }}"
-              token="${{ secrets.TELEGRAM_API_TOKEN }}"
-              message="Proxy with IP: $proxy_host is not in Italy (Country: $country)"
-              curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$to" -d "text=$message"
+              #to="${{ secrets.TELEGRAM_USERID }}"
+              #token="${{ secrets.TELEGRAM_API_TOKEN }}"
+              #message="Proxy with IP: $proxy_host is not in Italy (Country: $country)"
+              #curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$to" -d "text=$message"
             fi
         
             # Increment the loop count
