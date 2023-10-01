@@ -62,10 +62,10 @@ jobs:
         account: ${{ fromJSON(needs.DefineMatrix.outputs.accounts) }}
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
+    - name: Set up Python 3.11.5
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.11.5'
 
     - name: Install dependencies
       run: |
@@ -202,7 +202,7 @@ jobs:
           #--discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
   notify:
     name: Notify
-    #runs-on: ubuntu-latestù
+    #runs-on: ubuntu-latest
     runs-on: self-hosted
     continue-on-error: true
     needs:
