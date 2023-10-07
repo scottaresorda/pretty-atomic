@@ -202,8 +202,7 @@ jobs:
           #--discord https://discord.com/api/webhooks/1117119752326881340/qXLgdqjZD8EqgdMAW12_TX6_sWhVh78EKe2nD0U-sgLyVgcZvPNUccpxWLKxN4giX03J
   notify:
     name: Notify
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     continue-on-error: true
     needs:
       - wasabi
